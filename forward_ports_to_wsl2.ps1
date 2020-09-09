@@ -8,29 +8,25 @@ $ports=@(5000,8080);
 $ip_local = "0.0.0.0";
 $ip_wsl = "";
 
-# Get the local ip address of WSL 2. It seems, that the return value of `wsl`
-# is an array of lines. Unfortunately, I did not find a way to parse this array
-# with regular expressions without iterating.
-$ifconfig = wsl ifconfig;
-foreach ($l in $ifconfig) {
-    $m = $l -match "inet (?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})";
-    if($m) {
-        $ip_found = $Matches.ip;
-        if($ip_found -notmatch "^127") {
-            $ip_wsl = $ip_found;
-            Write-Output "Found WSL IP '$ip_wsl'";
-            break;
-        }
+# Get the local ip address of WSL 2.
+$ifconfig = wsl ifconfig | Out-String;
+$ips = $ifconfig | Select-String -AllMatches -Pattern "inet (?<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+foreach($m in $ips.Matches) {
+    $ip_found = $m.Groups["ip"].Value;
+    if($ip_found -notmatch "^127") {
+        $ip_wsl = $ip_found;
+        Write-Host "Found WSL IP '$ip_wsl'";
+        break;
     }
 }
 
-if( -Not $ip_wsl ){
-    Write-Output "ERROR: The ip address of WSL 2 cannot be found";
+if(-Not $ip_wsl){
+    Write-Warning "The ip address of WSL 2 cannot be determined.";
     exit;
 }
 
 $ports_array = $ports -join ",";
-Write-Output "Forwarding Ports '$ports_array' from '$ip_local' to '$ip_wsl'";
+Write-Host "Forwarding Ports '$ports_array' from '$ip_local' to '$ip_wsl'";
 
 function RunAsAdmin($commands) {
     # This function runs all $commands as administrator. Expecting an array as
@@ -60,8 +56,8 @@ foreach($port in $ports) {
     $commands += "netsh interface portproxy add v4tov4 listenport=$port listenaddress=$ip_local connectport=$port connectaddress=$ip_wsl";
 }
 
-Write-Output "Running the following commands as Admin now:`n";
+Write-Host "Running the following commands as Admin now:`n";
 $commands;
-Write-Output "`nPress any key to continue or ctrl+c to abort...";
+Write-Host "`nPress any key to continue or ctrl+c to abort...";
 $null = $Host.UI.RawUI.ReadKey('NoEcho, IncludeKeyDown');
 RunAsAdmin($commands);
