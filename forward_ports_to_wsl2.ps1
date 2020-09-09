@@ -1,4 +1,8 @@
 ﻿# Forward ports to WSL2 and enable firewall rules
+#
+# Requires elevation for setting firewall rules and port proxy. As the WSL is
+# not installed for the administrator, parts of this script is  run as normal
+# user.
 # Based on: https://github.com/microsoft/WSL/issues/4150#issuecomment-504209723
 $ports=@(5000,8080);
 $ip_local = "0.0.0.0";
@@ -25,9 +29,9 @@ function RunAsAdmin($commands) {
 
 $commands=@();
 #adding Exception Rules for inbound and outbound Rules
-$commands +=  'Remove-NetFireWallRule -DisplayName WSL2';
-$commands +=  'New-NetFireWallRule -DisplayName WSL2 -Direction Outbound -LocalPort '+$ports_array+' -Action Allow -Protocol TCP';
-$commands +=  'New-NetFireWallRule -DisplayName WSL2 -Direction Inbound -LocalPort '+$ports_array+' -Action Allow -Protocol TCP';
+$commands +=  "Remove-NetFireWallRule -DisplayName WSL2";
+$commands +=  "New-NetFireWallRule -DisplayName WSL2 -Direction Outbound -LocalPort $ports_array -Action Allow -Protocol TCP";
+$commands +=  "New-NetFireWallRule -DisplayName WSL2 -Direction Inbound -LocalPort $ports_array -Action Allow -Protocol TCP";
 
 foreach($port in $ports) {
     # Adding port proxy
