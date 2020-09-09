@@ -1,7 +1,7 @@
 ﻿# Forward ports to WSL2 and enable firewall rules
 #
 # Requires elevation for setting firewall rules and port proxy. As the WSL is
-# not installed for the administrator, parts of this script is  run as normal
+# not installed for the administrator, parts of this script are run as normal
 # user.
 # Based on: https://github.com/microsoft/WSL/issues/4150#issuecomment-504209723
 $ports=@(5000,8080);
@@ -36,9 +36,9 @@ function RunAsAdmin($commands) {
     # This function runs all $commands as administrator. Expecting an array as
     # $commands.
     $snippet = $commands -join " ; ";
-    $snippet = "cd '$pwd'; Invoke-Expression '" + $snippet + "' ; "
+    $snippet = "cd '$pwd'; Invoke-Expression '" + $snippet + "' ; ";
     if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        $snippet += "read-host Press ENTER to continue... ;"
+        $snippet += "read-host Press ENTER to continue... ;";
         Start-Process PowerShell -Verb RunAs "-NoProfile -ExecutionPolicy Bypass -Command $snippet";
     } else {
         Invoke-Expression $snippet;
@@ -60,8 +60,8 @@ foreach($port in $ports) {
     $commands += "netsh interface portproxy add v4tov4 listenport=$port listenaddress=$ip_local connectport=$port connectaddress=$ip_wsl";
 }
 
-Write-Output "Running the following commands as Admin now:`n"
-$commands
-Write-Output "`nPress any key to continue or ctrl+c to abort..."
+Write-Output "Running the following commands as Admin now:`n";
+$commands;
+Write-Output "`nPress any key to continue or ctrl+c to abort...";
 $null = $Host.UI.RawUI.ReadKey('NoEcho, IncludeKeyDown');
-RunAsAdmin($commands)
+RunAsAdmin($commands);
