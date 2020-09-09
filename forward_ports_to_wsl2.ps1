@@ -29,9 +29,10 @@ function RunAsAdmin($commands) {
 
 $commands=@();
 #adding Exception Rules for inbound and outbound Rules
-$commands +=  "Remove-NetFireWallRule -DisplayName WSL2";
-$commands +=  "New-NetFireWallRule -DisplayName WSL2 -Direction Outbound -LocalPort $ports_array -Action Allow -Protocol TCP";
-$commands +=  "New-NetFireWallRule -DisplayName WSL2 -Direction Inbound -LocalPort $ports_array -Action Allow -Protocol TCP";
+# For escaping `"` characters, see: https://stackoverflow.com/questions/6714165/powershell-stripping-double-quotes-from-command-line-arguments
+$commands +=  "Remove-NetFireWallRule -DisplayName \""WSL 2 \""";
+$commands +=  "New-NetFireWallRule -DisplayName \""WSL 2\"" -Direction Outbound -LocalPort $ports_array -Action Allow -Protocol TCP -Description \""Created by script - Simon\""";
+$commands +=  "New-NetFireWallRule -DisplayName \""WSL 2\"" -Direction Inbound -LocalPort $ports_array -Action Allow -Protocol TCP -Description \""Created by script - Simon\""";
 
 foreach($port in $ports) {
     # Adding port proxy
